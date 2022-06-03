@@ -12,4 +12,19 @@
     <ProjectReference Include="..\test-medium-library\test-medium-library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Addresses.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Addresses.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Addresses.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Addresses.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
