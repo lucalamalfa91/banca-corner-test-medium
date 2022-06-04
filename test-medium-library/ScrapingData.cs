@@ -1,33 +1,54 @@
-﻿using System.Globalization;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using System.Net;
 using System.Text;
+using test_medium_library.Decorator;
 using test_medium_library.Interfaces;
 
 namespace test_medium_library
 {
 	public class ScrapingData : IScrapingData
 	{
-		/// <inheritdoc/>
-		public async Task<string> CallUrl(string fullUrl)
+
+		private readonly IParsingHtmlDecorator _implementor;
+
+		public ScrapingData(IParsingHtmlDecorator implementor)
 		{
-			var client = new HttpClient();
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
-			client.DefaultRequestHeaders.Accept.Clear();
-			var response = client.GetStringAsync(fullUrl);
-			return await response;
+			_implementor = implementor;
 		}
 
 		/// <inheritdoc/>
-		public List<string> ParseHtml(string html)
+		public async Task<string> CallUrl(string fullUrl)
 		{
-			var htmlDoc = new HtmlDocument();
-			htmlDoc.LoadHtml(html);
+			try
+			{
+				var client = new HttpClient();
+				ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
+				client.DefaultRequestHeaders.Accept.Clear();
+				var response = client.GetStringAsync(fullUrl);
+				return await response;
+			}
+			catch(Exception)
+			{
+				throw new Exception("404 NotFound Exception, the Provided Url not exists.");
+			}
 
-			//implement decorator for getComposerList.
-			var stringComposerList = GetStringComposerList(htmlDoc);
+			
+		}
 
-			return stringComposerList;
+		/// <inheritdoc/>
+		public virtual List<string> ParseHtml(string html)
+		{
+			try
+			{
+				var htmlDoc = new HtmlDocument();
+				htmlDoc.LoadHtml(html);
+				//Apply decorator pattern
+				return _implementor.ParseItemOfListFromHtml(htmlDoc);
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message, ex.InnerException);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -41,23 +62,5 @@ namespace test_medium_library
 			//create csv file in a specified path.
 			File.WriteAllText(Path.Combine(path, "result.csv"), sb.ToString());
 		}
-
-		#region private
-		private static List<string> GetStringComposerList(HtmlDocument htmlDoc)
-		{
-			var htmlComposerList = htmlDoc.DocumentNode.Descendants("li")
-				.Where(node => !node.GetAttributeValue("class", "").Contains("something")).ToList();
-
-			List<string> stringComposerList = new List<string>();
-
-			foreach (var composer in htmlComposerList)
-			{
-				if (composer.InnerHtml.Contains("title"))
-					stringComposerList.Add(composer.InnerText);
-			}
-
-			return stringComposerList;
-		}
-		#endregion private
 	}
 }
