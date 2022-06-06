@@ -26,8 +26,7 @@ namespace test_medium_library.Decorator
 			foreach (var composer in htmlComposerList)
 			{
 				//Get only the row with title tag, and only the row with alive composer.
-				//TODO: controllare se la condizione "(born" è abbastanza o se sono necessari altri vincoli (file input sporco.)
-				if (composer.InnerHtml.Contains("title") && composer.InnerText.Contains("(born"))
+				if (composer.InnerHtml.Contains("title") && composer.InnerText.Contains("(born") && !composer.InnerText.Contains("fl.") && !composer.InnerText.Contains("died") && !composer.InnerText.Contains("after"))
 					stringComposerList.Add(composer.InnerText);
 			}
 
